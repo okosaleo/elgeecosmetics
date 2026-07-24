@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "prisma generate",
+    "dev:webhook": "ngrok http --url=greatly-funny-macaque.ngrok-free.app 3000",
     "lint": "eslint"
   },
   "dependencies": {
