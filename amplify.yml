@@ -3,8 +3,6 @@ frontend:
   phases:
     preBuild:
       commands:
-        - corepack enable
-        - pnpm install --ignore-scripts=false
         - nvm install 22
         - nvm use 22
         - npm install -g pnpm
