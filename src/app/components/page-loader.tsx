@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
 const WORDMARK = "ELGEECOSMETICS";
 const SESSION_KEY = "elgee-loader-shown";
 
 export function PageLoader() {
-  const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
@@ -15,13 +14,14 @@ export function PageLoader() {
   const lettersRef = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
-    // Already played once this tab — skip straight to the site, no replay
-    // on every internal navigation or refresh spam.
-    if (typeof window !== "undefined" && sessionStorage.getItem(SESSION_KEY)) {
+    // Already played once this tab — skip straight to hidden, no animation,
+    // no flash. The overlay markup is always rendered (see JSX below) so
+    // this ref is guaranteed to exist by the time this effect runs.
+    if (sessionStorage.getItem(SESSION_KEY)) {
+      if (overlayRef.current) overlayRef.current.style.display = "none";
       return;
     }
 
-    setMounted(true);
     document.body.style.overflow = "hidden";
 
     const ctx = gsap.context(() => {
@@ -89,8 +89,6 @@ export function PageLoader() {
 
     return () => ctx.revert();
   }, []);
-
-  if (!mounted) return null;
 
   return (
     <div
