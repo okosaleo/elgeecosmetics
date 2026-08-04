@@ -16,27 +16,27 @@ export default function Footer() {
               Address
             </h4>
             <p className="text-sm text-neutral-300">
-              Market str. 42, CA 10028, USA
+              Shop D15, Abia Plaza, Tradefair, Lagos State.
             </p>
           </div>
 
           <div>
             <h4 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white">
-              New Projects
+              Email
             </h4>
             <a
               href="mailto:sales@elgeecosmetics.com"
               className="text-sm text-neutral-300 hover:text-lime-200 transition-colors"
             >
-              sales@elgeecosmetics.com
+              elgeecosmetics@gmail.com
             </a>
           </div>
 
           <div>
             <h4 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white">
-              Call Us
+              Whats App
             </h4>
-            <p className="text-sm text-neutral-300">+1 234 56 7890</p>
+            <p className="text-sm text-neutral-300">+2348087642340</p>
           </div>
         </div>
       </div>
