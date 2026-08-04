@@ -13,6 +13,7 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { getCart,  toCartSummary } from "@/lib/cart";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
+import { PageLoader } from "./components/page-loader";
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
@@ -77,6 +78,7 @@ const cartSummary = toCartSummary(cart);
       className={cn("h-full", "antialiased", neueMontreal.className, "font-sans", figtree.variable)}
     >
       <body className="min-h-full flex flex-col">
+         <PageLoader />
         <NextSSRPlugin
           /**
            * The `extractRouterConfig` will extract **only** the route configs

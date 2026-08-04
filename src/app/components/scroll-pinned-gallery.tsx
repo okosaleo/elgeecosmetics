@@ -100,7 +100,7 @@ export default function ScrollPinnedGallery() {
       >
         {/* Pinned text panel — normal block on mobile, sticky-pinned on md+ */}
         <div ref={leftPanelRef} className="w-full shrink-0 md:h-screen md:w-1/4">
-          <div className="flex flex-col justify-center pb-10 md:h-full md:pb-0 -mt-28">
+          <div className="flex flex-col justify-center pb-10 md:h-full md:pb-0 md:-mt-28">
             <p className="text-2xl font-medium uppercase leading-tight text-neutral-100 md:text-3xl">
               We bring brands
               <br />

@@ -15,7 +15,7 @@ const GOOGLE_LOGO =
 
 type Mode = "login" | "signup";
 
-export default function LoginPage() {
+export function LoginForm() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");

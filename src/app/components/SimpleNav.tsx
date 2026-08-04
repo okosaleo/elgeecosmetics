@@ -5,6 +5,7 @@ import Image, { type StaticImageData } from "next/image";
 import { usePathname } from "next/navigation";
 import { FlipLink, FlipLinkHandle } from "./magnetic-flip-link";
 import { CartButton } from "@/components/cart/cart-button";
+import { authClient } from "@/lib/auth-client";
 
 export interface SimpleNavProps {
   logo?: string | StaticImageData;
@@ -49,12 +50,13 @@ const SimpleNav: React.FC<SimpleNavProps> = ({
   const linkRefs = useRef<(FlipLinkHandle | null)[]>([]);
 
   const pathname = usePathname();
+  const { data: session } = authClient.useSession();
 
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Shop All", href: "/shop" },
     { label: "About", href: "/about" },
-    { label: "Login", href: "/login" },
+    ...(session?.user ? [] : [{ label: "Login", href: "/login" }]),
   ];
 
   // Snaps every link back to its resting state. Call this any time the panel
