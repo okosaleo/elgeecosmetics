@@ -7,11 +7,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['pg', 'pg-types', 'pg-connection-string', 'pg-pool', 'pgpass'],
   outputFileTracingIncludes: {
     '/**': [
-      './node_modules/pg-types/**',
-    './node_modules/pg-connection-string/**',
-    './node_modules/pg-pool/**',
-    './node_modules/pgpass/**',
-    ],
+    './node_modules/pg/**',
+  ],
   },
   reactCompiler: true,
   images: {
