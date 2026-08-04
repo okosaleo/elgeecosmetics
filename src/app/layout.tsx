@@ -10,7 +10,7 @@ import { ourFileRouter } from "./api/uploadthing/core";
 import { Toaster } from "@/components/ui/toast";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartDrawer } from "@/components/cart/cart-drawer";
-import { getOrCreateCart, toCartSummary } from "@/lib/cart";
+import { getCart,  toCartSummary } from "@/lib/cart";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
@@ -67,8 +67,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-    const cart = await getOrCreateCart();
-  const cartSummary = toCartSummary(cart);
+    const cart = await getCart();
+const cartSummary = toCartSummary(cart);
 
 
   return (

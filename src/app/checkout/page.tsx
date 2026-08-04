@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/require-user";
-import { getOrCreateCart, toCartSummary } from "@/lib/cart";
+import { getCart, getOrCreateCart, toCartSummary } from "@/lib/cart";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SimpleNav from "@/app/components/SimpleNav";
@@ -8,7 +8,7 @@ import { CheckoutForm } from "./checkout-form";
 export default async function CheckoutPage() {
   const session = await requireUser("/checkout");
   const [cart, savedAddresses] = await Promise.all([
-    getOrCreateCart(),
+    getCart(),
     prisma.address.findMany({
       where: { userId: session.user.id, type: "SHIPPING" },
       orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],

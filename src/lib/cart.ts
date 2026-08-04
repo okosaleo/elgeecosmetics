@@ -33,12 +33,34 @@ const cartInclude = {
 export type CartWithItems = NonNullable<
   Awaited<ReturnType<typeof getOrCreateCart>>
 >;
+/**
+ * READ-ONLY. Safe to call from Server Components (layout, pages).
+ * Never writes cookies. Returns null if no cart exists yet —
+ * that's fine, it just means an empty cart in the UI.
+ */
+export async function getCart() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const cookieStore = await cookies();
+
+  if (session?.user) {
+    return prisma.cart.findUnique({
+      where: { userId: session.user.id },
+      include: cartInclude,
+    });
+  }
+
+  const token = cookieStore.get(CART_COOKIE)?.value;
+  if (!token) return null;
+
+  return prisma.cart.findUnique({
+    where: { sessionToken: token },
+    include: cartInclude,
+  });
+}
 
 /**
- * Returns the current cart, creating one if needed.
- * - Logged in: keyed by userId. If they also have a guest cart cookie,
- *   that guest cart is merged in (item quantities summed) and adopted.
- * - Guest: keyed by an httpOnly cookie token.
+ * WRITE-CAPABLE. Only call from Server Actions or Route Handlers —
+ * this sets/deletes cookies as needed (guest token issuance, merge-on-login cleanup).
  */
 export async function getOrCreateCart() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -152,7 +174,11 @@ export type CartSummary = {
   subtotalFormatted: string;
 };
 
-export function toCartSummary(cart: CartWithItems): CartSummary {
+export function toCartSummary(cart: CartWithItems | null): CartSummary {
+  if (!cart) {
+    return { items: [], count: 0, subtotal: 0, subtotalFormatted: "₦0.00" };
+  }
+
   const items: CartItemSummary[] = cart.items.map((item) => {
     const unitPrice = item.variant?.price ?? item.product.basePrice;
     const variantLabel = item.variant
