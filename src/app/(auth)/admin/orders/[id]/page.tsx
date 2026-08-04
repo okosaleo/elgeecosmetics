@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { koboToNaira } from "@/lib/slugify";
-import { OrderStatusSelect } from "@/components/admin/order-status-select";
+import { OrderStatusSelect } from "../components/order-status-select";
 
 export default async function OrderDetailPage({
   params,
