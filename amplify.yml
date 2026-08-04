@@ -14,6 +14,12 @@ frontend:
         - env | grep -e DATABASE_URL >> .env.production
         - env | grep -e BETTER_AUTH_SECRET >> .env.production
         - env | grep -e BETTER_AUTH_URL >> .env.production
+        - env | grep -e UPLOADTHING_TOKEN >> .env.production
+        - env | grep -e UPLOADTHING_SECRET >> .env.production
+        - env | grep -e UPLOADTHING_APP_ID >> .env.production
+        - env | grep -e PAYSTACK_SECRET_KEY >> .env.production
+        - env | grep -e NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY >> .env.production
+        - env | grep -e NEXT_PUBLIC_SITE_URL >> .env.production
         - pnpm build
   artifacts:
     baseDirectory: .next
