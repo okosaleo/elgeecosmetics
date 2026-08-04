@@ -1,6 +1,6 @@
 allowBuilds:
   '@prisma/engines': true
-  msgpackr-extract: set this to true or false
+  msgpackr-extract: true
   prisma: true
   sharp: false
   unrs-resolver: false
