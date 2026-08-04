@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
    typescript: {
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: ['pg', 'pg-types', 'pg-connection-string', 'pg-pool', 'pgpass'],
   reactCompiler: true,
   images: {
     unoptimized: true,
