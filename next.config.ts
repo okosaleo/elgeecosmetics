@@ -8,13 +8,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/**': [
       './node_modules/pg-types/**',
-      './node_modules/pg-connection-string/**',
-      './node_modules/pg-pool/**',
-      './node_modules/pgpass/**',
-      './node_modules/postgres-array/**',
-      './node_modules/postgres-bytea/**',
-      './node_modules/postgres-date/**',
-      './node_modules/postgres-interval/**',
+    './node_modules/pg-connection-string/**',
+    './node_modules/pg-pool/**',
+    './node_modules/pgpass/**',
     ],
   },
   reactCompiler: true,
