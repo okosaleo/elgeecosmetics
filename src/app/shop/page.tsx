@@ -1,13 +1,58 @@
+import { prisma } from "@/lib/prisma";
+import DiscountButton from "../components/discount-button";
+import HeroDistortion from "../components/HeroDistortion";
+import SimpleNav from "../components/SimpleNav";
+import ShopProducts, { type ShopProduct } from "./components/shop-products";
 
-import DiscountButton from '../components/discount-button'
-import HeroDistortion from '../components/HeroDistortion'
-import SimpleNav from '../components/SimpleNav'
-import ShopProducts from './components/shop-products'
+export default async function Shop() {
+  const products = await prisma.product.findMany({
+    where: { status: "ACTIVE" },
+    include: {
+      category: { select: { id: true, name: true } },
+      brand: { select: { id: true, name: true } },
+      images: { orderBy: { position: "asc" }, take: 1 },
+      variants: { select: { price: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-export default function Shop() {
+  const shopProducts: ShopProduct[] = products.map((p) => {
+    const price =
+      p.variants.length > 0
+        ? Math.min(...p.variants.map((v) => v.price))
+        : p.basePrice;
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      price,
+      compareAtPrice: p.variants.length > 0 ? null : p.compareAtPrice,
+      categoryId: p.category.id,
+      categoryName: p.category.name,
+      brandId: p.brand?.id ?? null,
+      brandName: p.brand?.name ?? null,
+      image: p.images[0]?.url ?? null,
+    };
+  });
+
+  // Only show filter options that actually have active products against them
+  const categories = Array.from(
+    new Map(
+      shopProducts.map((p) => [p.categoryId, { id: p.categoryId, name: p.categoryName }])
+    ).values()
+  );
+  const brands = Array.from(
+    new Map(
+      shopProducts
+        .filter((p) => p.brandId)
+        .map((p) => [p.brandId as string, { id: p.brandId as string, name: p.brandName! }])
+    ).values()
+  );
+
   return (
     <div>
-      <SimpleNav title="ELGEECOSMETICS" showCart={false} />
+      <SimpleNav title="ELGEECOSMETICS" />
 
       <section className="relative h-screen w-full overflow-hidden">
         <DiscountButton />
@@ -39,7 +84,7 @@ export default function Shop() {
         </div>
       </section>
 
-      <ShopProducts />
+      <ShopProducts products={shopProducts} categories={categories} brands={brands} />
     </div>
-  )
+  );
 }

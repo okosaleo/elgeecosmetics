@@ -4,7 +4,7 @@ import { gsap } from "gsap";
 import Image, { type StaticImageData } from "next/image";
 import { usePathname } from "next/navigation";
 import { FlipLink, FlipLinkHandle } from "./magnetic-flip-link";
-
+import { CartButton } from "@/components/cart/cart-button";
 
 export interface SimpleNavProps {
   logo?: string | StaticImageData;
@@ -14,6 +14,7 @@ export interface SimpleNavProps {
   ease?: string;
   baseColor?: string;
   navTextColor?: string;
+  /** Set to false to hide the cart trigger entirely on this page (e.g. checkout). Defaults to true. */
   showCart?: boolean;
   /** Caption shown above the footer image, e.g. "Happy to see you again" */
   footerCaption?: string;
@@ -33,6 +34,7 @@ const SimpleNav: React.FC<SimpleNavProps> = ({
   ease = "power3.out",
   baseColor = "rgba(255, 255, 255, 0.92)",
   navTextColor = "#17301C",
+  showCart = true,
   footerCaption = "Happy to see you again",
   footerImage = PLACEHOLDER_IMAGE,
   footerImageAlt = "Nav footer",
@@ -190,6 +192,8 @@ const SimpleNav: React.FC<SimpleNavProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
+            {showCart && <CartButton textColor={navTextColor} />}
+
             <button
               type="button"
               onClick={toggleMenu}

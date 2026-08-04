@@ -1,62 +1,35 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { gsap } from "gsap";
 
-type Product = {
+export type ShopProduct = {
   id: string;
   name: string;
-  price: number;
-  discount?: number;
-  category: "Fragrance" | "Cleanser" | "Serums";
-  gender?: "Male" | "Female" | "Unisex";
-  brand?: string;
-  image: string;
+  slug: string;
+  price: number; // kobo — lowest variant price, or basePrice if no variants
+  compareAtPrice: number | null; // kobo
+  categoryId: string;
+  categoryName: string;
+  brandId: string | null;
+  brandName: string | null;
+  image: string | null;
 };
 
-const PRODUCTS: Product[] = [
-  {
-    id: "flumam-amber",
-    name: "Flumam Amber",
-    price: 4500,
-    discount: 30,
-    category: "Fragrance",
-    gender: "Unisex",
-    brand: "Lumani",
-    image:
-      "https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW61jyPPFTDcqf6IVsjvbyeGHu0JDkPEr45idNm",
-  },
-  {
-    id: "eco-display",
-    name: "Eco Display",
-    price: 8500,
-    discount: 15,
-    category: "Cleanser",
-    gender: "Unisex",
-    brand: "Lumani",
-    image:
-      "https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6U2Mt1h6j2NdYey1T6aLDBvsglQop9KiOIGnh",
-  },
-  {
-    id: "marble-mortar",
-    name: "Marble Mortar",
-    price: 4000,
-    discount: 10,
-    category: "Serums",
-    gender: "Unisex",
-    brand: "Lumani",
-    image:
-      "https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6vRqhXOBbV1pxeTEA7adYlURkmj35ZnwGJr8P",
-  },
-];
+type FilterOption = { id: string; name: string };
 
-const CATEGORIES: Product["category"][] = ["Fragrance", "Cleanser", "Serums"];
-const BRANDS = Array.from(
-  new Set(PRODUCTS.map((p) => p.brand).filter(Boolean))
-) as string[];
+function naira(kobo: number) {
+  return `₦ ${Math.round(kobo / 100).toLocaleString()}`;
+}
 
-function ProductCard({ product }: { product: Product }) {
+function discountPercent(price: number, compareAt: number | null) {
+  if (!compareAt || compareAt <= price) return null;
+  return Math.round(((compareAt - price) / compareAt) * 100);
+}
+
+function ProductCard({ product }: { product: ShopProduct }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const xTo = useRef<gsap.QuickToFunc | null>(null);
@@ -105,8 +78,10 @@ function ProductCard({ product }: { product: Product }) {
     });
   };
 
+  const discount = discountPercent(product.price, product.compareAtPrice);
+
   return (
-    <div className="flex flex-col">
+    <Link href={`/shop/${product.slug}`} className="flex flex-col">
       <div
         ref={cardRef}
         onMouseEnter={handleEnter}
@@ -114,17 +89,19 @@ function ProductCard({ product }: { product: Product }) {
         onMouseLeave={handleLeave}
         className="group relative aspect-[4/3] w-full overflow-hidden bg-neutral-200 md:cursor-none"
       >
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 100vw, 30vw"
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-        />
+        {product.image && (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 30vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+        )}
 
-        {product.discount && (
+        {discount && (
           <span className="absolute left-4 top-4 rounded-sm bg-white px-3 py-1 text-xs font-medium text-neutral-900">
-            %{product.discount}
+            %{discount}
           </span>
         )}
 
@@ -143,45 +120,48 @@ function ProductCard({ product }: { product: Product }) {
           {product.name}
         </h3>
         <p className="mt-1 text-sm font-medium text-neutral-700">
-          &#8358; {product.price.toLocaleString()}
+          {naira(product.price)}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
-export default function ShopProducts() {
+export default function ShopProducts({
+  products,
+  categories,
+  brands,
+}: {
+  products: ShopProduct[];
+  categories: FilterOption[];
+  brands: FilterOption[];
+}) {
   const [search, setSearch] = useState("");
-  const [gender, setGender] = useState("All");
-  const [categories, setCategories] = useState<Product["category"][]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [brandIds, setBrandIds] = useState<string[]>([]);
 
-  const toggleCategory = (cat: Product["category"]) => {
-    setCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+  const toggleCategory = (id: string) => {
+    setCategoryIds((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
     );
   };
 
-  const toggleBrand = (brand: string) => {
-    setBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+  const toggleBrand = (id: string) => {
+    setBrandIds((prev) =>
+      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
     );
   };
 
   const filtered = useMemo(() => {
-    return PRODUCTS.filter((p) => {
-      if (
-        search &&
-        !p.name.toLowerCase().includes(search.toLowerCase())
-      )
+    return products.filter((p) => {
+      if (search && !p.name.toLowerCase().includes(search.toLowerCase()))
         return false;
-      if (gender !== "All" && p.gender !== gender) return false;
-      if (categories.length && !categories.includes(p.category)) return false;
-      if (brands.length && (!p.brand || !brands.includes(p.brand)))
+      if (categoryIds.length && !categoryIds.includes(p.categoryId)) return false;
+      if (brandIds.length && (!p.brandId || !brandIds.includes(p.brandId)))
         return false;
       return true;
     });
-  }, [search, gender, categories, brands]);
+  }, [products, search, categoryIds, brandIds]);
 
   return (
     <section className="bg-white px-6 py-16 md:px-10 md:py-20">
@@ -225,65 +205,50 @@ export default function ShopProducts() {
             </div>
           </div>
 
-          {/* Gender */}
-          <div className="mb-8">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-neutral-500">
-              Gender
-            </label>
-            <select
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-500"
-            >
-              <option>All</option>
-              <option>Male</option>
-              <option>Female</option>
-              <option>Unisex</option>
-            </select>
-          </div>
-
           {/* Category */}
-          <div className="mb-8">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-neutral-500">
-              Category
-            </label>
-            <div className="flex flex-col gap-2">
-              {CATEGORIES.map((cat) => (
-                <label
-                  key={cat}
-                  className="flex items-center gap-2 text-sm text-neutral-800"
-                >
-                  <input
-                    type="checkbox"
-                    checked={categories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                    className="h-4 w-4 accent-neutral-900"
-                  />
-                  {cat}
-                </label>
-              ))}
+          {categories.length > 0 && (
+            <div className="mb-8">
+              <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-neutral-500">
+                Category
+              </label>
+              <div className="flex flex-col gap-2">
+                {categories.map((cat) => (
+                  <label
+                    key={cat.id}
+                    className="flex items-center gap-2 text-sm text-neutral-800"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={categoryIds.includes(cat.id)}
+                      onChange={() => toggleCategory(cat.id)}
+                      className="h-4 w-4 accent-neutral-900"
+                    />
+                    {cat.name}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Brand */}
-          {BRANDS.length > 0 && (
+          {brands.length > 0 && (
             <div className="mb-8">
               <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-neutral-500">
                 Brand
               </label>
               <div className="flex flex-col gap-2">
-                {BRANDS.map((brand) => (
+                {brands.map((brand) => (
                   <label
-                    key={brand}
+                    key={brand.id}
                     className="flex items-center gap-2 text-sm text-neutral-800"
                   >
                     <input
                       type="checkbox"
-                      checked={brands.includes(brand)}
-                      onChange={() => toggleBrand(brand)}
+                      checked={brandIds.includes(brand.id)}
+                      onChange={() => toggleBrand(brand.id)}
                       className="h-4 w-4 accent-neutral-900"
                     />
-                    {brand}
+                    {brand.name}
                   </label>
                 ))}
               </div>
