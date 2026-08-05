@@ -69,7 +69,7 @@ export function LoginForm() {
       provider: "google",
       // a small server page reads the resulting session and routes
       // by role, since we can't check role before the OAuth redirect
-      callbackURL: "/auth/redirect",
+      callbackURL: "/shop",
     });
   };
 
