@@ -4,6 +4,8 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Link from 'next/link';
+import Image from 'next/image';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -92,7 +94,7 @@ export default function RitualStack({ panels }: { panels: RitualPanel[] }) {
         >
           <div className="relative w-full h-1/2 md:h-full md:w-1/2 overflow-hidden">
             <div ref={(el) => { if (el) imgRefs.current[i] = el; }} className="absolute inset-0 will-change-transform">
-              <img src={p.image} alt="" className="w-full h-full object-cover block" />
+              <Image src={p.image} fill alt="" className="w-full h-full object-cover block" />
             </div>
           </div>
 
@@ -108,13 +110,13 @@ export default function RitualStack({ panels }: { panels: RitualPanel[] }) {
                   <img src={p.thumbnail} alt="" className="w-full h-full object-cover block" />
                 </div>
               )}
-              <a
-                href="#"
+              <Link
+                href="shop"
                 className="inline-flex font-semibold items-center gap-1.5 text-sm tracking-[0.12em] uppercase no-underline border-b pb-1"
                 style={{ borderColor: p.fg ?? '#111', color: p.fg ?? '#111' }}
               >
                 {p.ctaLabel ?? 'Explore'} <span>+</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

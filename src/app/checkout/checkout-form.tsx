@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePaystackPayment } from "react-paystack";
 import { initializeCheckout, verifyPaystackPayment } from "./actions";
+import type { ShippingEstimate } from "@/lib/shipping";
+import { estimateShippingFee } from "./shipping-actions";
 
 const PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? "";
 
@@ -49,12 +51,18 @@ type PayConfig = {
   publicKey: string;
 };
 
+function naira(kobo: number) {
+  return `₦${(kobo / 100).toLocaleString()}`;
+}
+
 export function CheckoutForm({
   email,
   savedAddresses,
+  subtotal,
 }: {
   email: string;
   savedAddresses: SavedAddress[];
+  subtotal: number; // kobo
 }) {
   const router = useRouter();
 
@@ -69,6 +77,10 @@ export function CheckoutForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payConfig, setPayConfig] = useState<PayConfig | null>(null);
+
+  const [shipping, setShipping] = useState<ShippingEstimate | null>(null);
+  const [estimating, setEstimating] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initializePayment = usePaystackPayment(
     payConfig ?? { reference: "", email, amount: 0, publicKey: PUBLIC_KEY }
@@ -97,6 +109,55 @@ export function CheckoutForm({
     setPayConfig(null); // reset so this effect doesn't re-fire on its own
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payConfig]);
+
+  // Live shipping estimate — recalculated whenever the selected saved
+  // address changes, or (debounced) once all required new-address fields
+  // are filled in. This is display-only; the real charge is recalculated
+  // server-side at payment time regardless of what's shown here.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (mode === "saved") {
+      if (!selectedId) {
+        setShipping(null);
+        return;
+      }
+      setEstimating(true);
+      estimateShippingFee({ addressId: selectedId }).then((result) => {
+        setEstimating(false);
+        setShipping(result.ok ? result.estimate : null);
+      });
+      return;
+    }
+
+    // mode === "new"
+    const ready =
+      newAddress.line1.trim() && newAddress.city.trim() && newAddress.state.trim() && newAddress.country.trim();
+
+    if (!ready) {
+      setShipping(null);
+      return;
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setEstimating(true);
+      estimateShippingFee({
+        newAddress: {
+          line1: newAddress.line1,
+          city: newAddress.city,
+          state: newAddress.state,
+          country: newAddress.country,
+        },
+      }).then((result) => {
+        setEstimating(false);
+        setShipping(result.ok ? result.estimate : null);
+      });
+    }, 600);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [mode, selectedId, newAddress.line1, newAddress.city, newAddress.state, newAddress.country]);
 
   function setField<K extends keyof NewAddress>(key: K, value: NewAddress[K]) {
     setNewAddress((a) => ({ ...a, [key]: value }));
@@ -136,6 +197,8 @@ export function CheckoutForm({
       publicKey: PUBLIC_KEY,
     });
   }
+
+  const total = subtotal + (shipping?.feeKobo ?? 0);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -275,12 +338,39 @@ export function CheckoutForm({
         </div>
       )}
 
+      {/* Live shipping + total */}
+      <div className="mt-2 flex flex-col gap-1 border-t border-neutral-200 pt-4 text-sm">
+        <div className="flex justify-between text-neutral-500">
+          <span>Subtotal</span>
+          <span>{naira(subtotal)}</span>
+        </div>
+        <div className="flex justify-between text-neutral-500">
+          <span>
+            Shipping
+            {shipping?.zone === "outside_lagos" && shipping.distanceKm !== null && (
+              <span className="text-xs text-neutral-400"> (~{shipping.distanceKm}km)</span>
+            )}
+          </span>
+          <span>
+            {estimating
+              ? "Calculating…"
+              : shipping
+              ? naira(shipping.feeKobo)
+              : "Add address"}
+          </span>
+        </div>
+        <div className="flex justify-between border-t border-neutral-200 pt-2 font-semibold text-neutral-900">
+          <span>Total</span>
+          <span>{naira(total)}</span>
+        </div>
+      </div>
+
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <button
         type="submit"
-        disabled={submitting}
-        className="mt-4 bg-neutral-900 px-6 py-3 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-neutral-800 disabled:opacity-50"
+        disabled={submitting || estimating || !shipping}
+        className="mt-2 bg-neutral-900 px-6 py-3 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-neutral-800 disabled:opacity-50"
       >
         {submitting ? "Preparing payment…" : "Pay with Paystack"}
       </button>

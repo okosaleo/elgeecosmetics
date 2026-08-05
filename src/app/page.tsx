@@ -49,9 +49,9 @@ export default function Home() {
       <AfterHero />
        <RitualStack
   panels={[
-    { eyebrow: 'Ritual 01', title: 'Skin Care', subtitle: 'Smooth body', image: 'https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6GBXgewQ8Pa1KWLSbXFdkm5f6p2txIJ7rqclM', thumbnail: 'https://picsum.photos/seed/skincare-thumb/400/300', bg: '#C19A6B', fg: '#1b3025', imageSide: 'left' },
-    { eyebrow: 'Ritual 02', title: 'Hair Care', subtitle: 'Nourish & repair', image: 'https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6KAucfGtf24i0TY5zEV1oSJUADRs6yZI7gMxk', thumbnail: 'https://picsum.photos/seed/haircare-thumb/400/300', bg: '#f3ded1', fg: '#3a2418', imageSide: 'right' },
-    { eyebrow: 'Ritual 03', title: 'Body Care', subtitle: 'Renew from within', image: 'https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6XUVXz49W6KiyeYObraul3LTRZ59NdkvnDIEG', thumbnail: 'https://picsum.photos/seed/bodycare-thumb/400/300', bg: '#e8d5c4', fg: '#241b3a', imageSide: 'left' },
+    { eyebrow: 'Ritual 01', title: 'Foundations', subtitle: 'Liquid Gold', image: 'https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6GBXgewQ8Pa1KWLSbXFdkm5f6p2txIJ7rqclM', thumbnail: 'https://picsum.photos/seed/skincare-thumb/400/300', bg: '#C19A6B', fg: '#1b3025', imageSide: 'left' },
+    { eyebrow: 'Ritual 02', title: 'Powders', subtitle: 'Nourish & repair', image: 'https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6KAucfGtf24i0TY5zEV1oSJUADRs6yZI7gMxk', thumbnail: 'https://picsum.photos/seed/haircare-thumb/400/300', bg: '#f3ded1', fg: '#3a2418', imageSide: 'right' },
+    { eyebrow: 'Ritual 03', title: 'Palettes', subtitle: 'Renew from within', image: 'https://s9fz1hrsic.ufs.sh/f/3l7D2bitUmW6XUVXz49W6KiyeYObraul3LTRZ59NdkvnDIEG', thumbnail: 'https://picsum.photos/seed/bodycare-thumb/400/300', bg: '#e8d5c4', fg: '#241b3a', imageSide: 'left' },
   ]}
 />
     <ScrollPinnedGallery />

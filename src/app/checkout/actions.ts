@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getOrCreateCart } from "@/lib/cart";
 import { finalizeOrderPayment } from "@/lib/finalize-order-payment";
+import { calculateShippingFee } from "@/lib/shipping";
 
 const newAddressSchema = z.object({
   fullName: z.string().min(1),
@@ -130,7 +131,14 @@ export async function initializeCheckout(input: unknown): Promise<InitResult> {
     }
   }
 
-  const shippingFee = 0; // wire up real shipping calculation later if needed
+  // Authoritative shipping calculation — always re-derived server-side from
+  // the resolved address, regardless of what the form's live estimate showed.
+  const addressRecord = await prisma.address.findUniqueOrThrow({
+    where: { id: addressId },
+    select: { line1: true, city: true, state: true, country: true },
+  });
+  const shippingEstimate = await calculateShippingFee(addressRecord);
+  const shippingFee = shippingEstimate.feeKobo;
   const total = subtotal + shippingFee;
 
   const orderNumber = `ELG-${Date.now().toString(36).toUpperCase()}`;

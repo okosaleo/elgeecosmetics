@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/require-user";
-import { getCart, getOrCreateCart, toCartSummary } from "@/lib/cart";
+import { getOrCreateCart, toCartSummary } from "@/lib/cart";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SimpleNav from "@/app/components/SimpleNav";
@@ -8,7 +8,7 @@ import { CheckoutForm } from "./checkout-form";
 export default async function CheckoutPage() {
   const session = await requireUser("/checkout");
   const [cart, savedAddresses] = await Promise.all([
-    getCart(),
+    getOrCreateCart(),
     prisma.address.findMany({
       where: { userId: session.user.id, type: "SHIPPING" },
       orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
@@ -42,7 +42,11 @@ export default async function CheckoutPage() {
         </h1>
 
         <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.2fr_1fr]">
-          <CheckoutForm email={session.user.email} savedAddresses={savedAddresses} />
+          <CheckoutForm
+            email={session.user.email}
+            savedAddresses={savedAddresses}
+            subtotal={summary.subtotal}
+          />
 
           <div className="border-t border-neutral-200 pt-6 md:border-l md:border-t-0 md:pl-10 md:pt-0">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500">
@@ -65,9 +69,13 @@ export default async function CheckoutPage() {
               ))}
             </ul>
             <div className="mt-6 flex justify-between border-t border-neutral-200 pt-4 text-sm font-semibold">
-              <span>Total</span>
+              <span>Subtotal</span>
               <span>{summary.subtotalFormatted}</span>
             </div>
+            <p className="mt-2 text-xs text-neutral-400">
+              Shipping is calculated from your delivery address — see the total
+              on the left.
+            </p>
           </div>
         </div>
       </div>
